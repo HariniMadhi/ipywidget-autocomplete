@@ -1,52 +1,59 @@
-from ipywidgets import *
-
-def autoFill(opts=[''], val='',txt='',placehold='Please type here...',callback=False):
-    opts.append('')
+import ipywidgets as widgets
+def autoFill(options = [''], val = '', txt = '', placehold = '', callback = False):
+    
+    options.append('')
     def dropFunc(value):
-        if (value.new in opts):
+        if (value.new in options):
             dropClose()
             if (callable(callback)):
-                callback(value) 
-        text.value = value.new                
+                callback(value)
+        text.value = value.new
+        
     def dropClose():
-        drop.layout.visibility='hidden'
-        selDropBox.layout.visibility='hidden'            
-        selDropBox.layout.display='none'         
+        drop.layout.visibility = 'hidden'
+        selDropBox.layout.visibility = 'hidden'            
+        selDropBox.layout.display = 'none'
+        
+    def dropOpen():
+        drop.layout.visibility = 'visible'
+        selDropBox.layout.visibility = 'visible'
+        selDropBox.layout.display = 'flex'
+            
     def textFunc(value):
         matched = False
-        if (len(value.new)>len(value.old)):
-            if (len(value.new)>2):
-                word = value.new
-                out = [word]
-                for mystring in opts:
-                    if word.lower() in mystring.lower(): 
-                        if (mystring.lower()==word.lower()):
-                            matched = True
-                        out.append(mystring)
-                if (not matched):
-                    drop.layout.visibility='visible'
-                    selDropBox.layout.visibility='visible'
-                    selDropBox.layout.display='flex'
-                    out.append('')
-                    drop.options=out 
-                else:
-                    dropClose()                    
+        word = value.new
+        if not word:
+            drop.options = options
+            drop.value = ''
+            dropOpen()
+            return
+        out = [word]
+        for option in options:
+            if word.lower() in option.lower(): 
+                if (option.lower() == word.lower()):
+                    matched = True
+                out.append(option)
+        if (not matched):
+            dropOpen()
+            out.append('')
+            drop.options = out
+        else:
+            dropClose()
         
-    drop = Select(
-                options=opts,
-                value=val,
-                rows=10,
-                description=txt,
-                disabled=False,
-           )     
-    text = Text(
-                value=val,
-                placeholder=placehold,
-                description=txt,
-                disabled=False,    
-            )         
-    drop.observe(dropFunc, names='value')
-    text.observe (textFunc,names='value')
-    selTextBox = Box([text])
-    selDropBox = Box([drop], layout = Layout(display='none', top='-32px', visibility='hidden', flex_flow='column'))
-    return (VBox([selTextBox, selDropBox],layout = Layout(display='flex', flex_flow='column'))) 
+    drop = widgets.Select(options = options, value = val, rows = 10, description = txt)
+    text = widgets.Text(value = val, placeholder = placehold, description = txt)
+    drop.observe(dropFunc, names = 'value')
+    text.observe(textFunc, names = 'value')
+    
+    selTextBox = widgets.Box([text])
+    selDropBox = widgets.Box([drop])
+    return (widgets.VBox([selTextBox, selDropBox], layout = widgets.Layout(display='flex', flex_flow='column')))
+
+
+def open(value):
+    show.value = value.new
+    
+options = ['Football', 'Basketball', 'Volleyball', 'Basketcase', 'Showcase', 'Footer', 'Header', 'Viewer', 'Footage', 'Showtime', 'Show Business']
+
+au = autoFill(options, callback = open)
+display(au)
